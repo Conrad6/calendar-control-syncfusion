@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CalendarControl.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/20.1.47/tailwind.css" />
+    <link rel="stylesheet" id="theme" href="https://cdn.syncfusion.com/ej2/20.1.47/tailwind.css" />
     <script src="https://cdn.syncfusion.com/ej2/20.1.47/dist/ej2.min.js"></script>
 </head>
 <body>
@@ -26,6 +26,14 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <select class="form-select" onchange="setTheme(this.value)">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                            </select>
                         </li>
                     </ul>
                 </div>
@@ -47,6 +55,16 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 	<ejs-scripts></ejs-scripts>
+    <script>
+        function setTheme(theme){
+            document.getElementById('theme').href = `https://cdn.syncfusion.com/ej2/20.1.47/tailwind${theme == 'light' ? '' : '-dark'}.css`;
+            localStorage.setItem('theme', theme);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setTheme(localStorage.getItem('theme') || 'light');
+        })
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

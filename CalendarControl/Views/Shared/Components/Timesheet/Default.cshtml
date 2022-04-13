@@ -1,0 +1,96 @@
+﻿@using CalendarControl.ViewComponents.ViewModels
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Navigations
+@using Syncfusion.EJ2.Schedule
+@model TimesheetControlViewModel
+
+@{
+    View view;
+
+    switch (Model.DisplayMode)
+    {
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.List:
+            view = View.Agenda;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.Next7Days:
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.CalendarWeek:
+            view = View.Week;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.Month:
+            view = View.Month;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.WorkWeek:
+            view = View.WorkWeek;
+            break;
+        default:
+            view = View.Day;
+            break;
+    }
+}
+
+<div class="row">
+    <div class="col-12 control-section">
+        <div class="content-wrapper d-flex">
+            <div class="schedule-overview">
+                <div class="overview-header">
+                </div>
+                <div class="overview-toolbar">
+                    @(Html.EJS()
+                    .Toolbar("toolbar_options")
+                    .Height("70px")
+                    .OverflowMode(Syncfusion.EJ2.Navigations.OverflowMode.Scrollable)
+                    .ScrollStep(100)
+                    .Items(new List<ToolbarItem>() {
+                        new ToolbarItem { PrefixIcon = "e-icons e-day", TooltipText = "Day", Text = "Day"  },
+                        new ToolbarItem { PrefixIcon = "e-icons e-week", TooltipText = "Work Week", Text = "Work Week"  },
+                        new ToolbarItem { PrefixIcon = "e-icons e-week", TooltipText = "Calendar Week", Text = "Calendar Week"  },
+                        new ToolbarItem { PrefixIcon = "e-icons e-month", TooltipText = "Month", Text = "Month"  },
+                        new ToolbarItem { PrefixIcon = "e-icons  e-agenda-date-range", TooltipText = "List", Text = "List"  },
+                        new ToolbarItem { Type = ItemType.Separator },
+                        new ToolbarItem { PrefixIcon="e-icons e-settings", TooltipText="Settings", Text="Settings" }
+                    })
+                    .Render())
+                </div>
+                <div class="overview-content">
+                    <div class="left-panel">
+                        @(Html.EJS()
+                        .Schedule("schedule")
+                        .Height("600px")
+                        .EventSettings(new ScheduleEventSettings ())
+                        .SelectedDate(DateTime.Now)
+                        .CurrentView(view)
+                        .Views(view => {
+                        view.Option(View.Day).Add();
+                        view.Option(View.WorkWeek).Add();
+                        view.Option(View.Week).DisplayName("Calendar Week").Add();
+                        view.Option(View.Month).Add();
+                        view.ShowWeekNumber(true);
+                        view.HeaderRows(null);
+                        view.Option(View.Agenda).DisplayName("List").Add();
+                        }).Render())
+                    </div>
+                </div>
+            </div>
+            <template id="futureMonthTemplate">
+                @(
+                    Html.EJS()
+                    .Calendar("dummy")
+                    .Start(Syncfusion.EJ2.Calendars.CalendarView.Month)
+                    .ShowTodayButton(false)
+                    .Render()
+                )
+            </template>
+            <div id="futureMonthsContainer" class="right-panel mx-3">
+                future months here
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    const template = document.getElementById('futureMonthTemplate');
+    const clone = template.cloneNode(true);
+</script>
+
+<style>
+</style>
