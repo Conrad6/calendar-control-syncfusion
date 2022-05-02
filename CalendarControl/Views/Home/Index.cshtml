@@ -1,5 +1,186 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Syncfusion.EJ2.Navigations;
+@using CalendarControl.ViewComponents.ViewModels
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Schedule
+@model TimesheetControlViewModel
+@{
+    ViewData["Title"] = "Schedule";
+    View view;
+
+    switch (Model.DisplayMode)
+    {
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.List:
+            view = View.Agenda;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.Next7Days:
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.CalendarWeek:
+            view = View.Week;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.Month:
+            view = View.Month;
+            break;
+        case CalendarControl.ViewComponents.ViewModels.DisplayMode.WorkWeek:
+            view = View.WorkWeek;
+            break;
+        default:
+            view = View.Day;
+            break;
+    }
 }
 
-@await Component.InvokeAsync("Timesheet")
+@(
+    Html.EJS()
+    .Schedule("scheduler")
+    .Height("100vh")
+    .ShowQuickInfo(false)
+    .PopupOpen("popupOpen")
+    .Width("100%")
+    .ActionBegin("onActionBegin")
+    .ActionComplete("onActionComplete")
+    .Views(builder => {
+        builder.Option(Syncfusion.EJ2.Schedule.View.Day).Add();
+        builder.Option(Syncfusion.EJ2.Schedule.View.Week).DisplayName("Calendar Week").Add();
+        builder.Option(Syncfusion.EJ2.Schedule.View.WorkWeek).Add();
+        builder.Option(Syncfusion.EJ2.Schedule.View.Month).Add();
+        builder.Option(Syncfusion.EJ2.Schedule.View.Agenda).DisplayName("List").Add();
+    })
+    .CurrentView(view)
+    .Render()
+)
+
+@(
+    Html.EJS()
+    .Sidebar("side-bar")
+    .Target("schedule")
+    .Type(Syncfusion.EJ2.Navigations.SidebarType.Push)
+    .IsOpen(false)
+    .Width("13.5%")
+    .CloseOnDocumentClick(true)
+    .Position(Syncfusion.EJ2.Navigations.SidebarPosition.Right)
+    .ContentTemplate(@<div class="p-2 d-flex flex-column gap-2">
+        @Html.EJS().Calendar("c1").Value(DateTime.Now.AddMonths(0)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c2").Value(DateTime.Now.AddMonths(1)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c3").Value(DateTime.Now.AddMonths(2)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c4").Value(DateTime.Now.AddMonths(3)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c5").Value(DateTime.Now.AddMonths(4)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c6").Value(DateTime.Now.AddMonths(5)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c7").Value(DateTime.Now.AddMonths(6)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c8").Value(DateTime.Now.AddMonths(7)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c9").Value(DateTime.Now.AddMonths(8)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+        @Html.EJS().Calendar("c10").Value(DateTime.Now.AddMonths(9)).ShowTodayButton(false).Start(Syncfusion.EJ2.Calendars.CalendarView.Month).Render()
+    </div>)
+    .Render()
+)
+
+<style>
+    #side-bar .e-header .e-icon-container {
+        display: none;
+    }
+
+    #side-bar .e-calendar .e-content td.e-selected-date span.e-day {
+        background-color: maroon;
+        color: #fff;
+    }
+
+    .e-schedule .e-vertical-view .e-time-cells-wrap table td,
+    .e-schedule .e-vertical-view .e-work-cells {
+        height: 150px;
+    }
+</style>
+
+<script>
+    const futureMonthsButton = 'future-months-button';
+    let sidebarObj;
+    let sidebar;
+    document.addEventListener('DOMContentLoaded', function() {
+        sidebar = document.getElementById('side-bar');
+        sidebarObj = sidebar.ej2_instances[0];
+    });
+
+    function onActionComplete(args) {
+        var scheduleElement = document.getElementById('scheduler');
+        if(args.requestType === 'toolBarItemRendered') {
+            var settingsButtonElement = scheduleElement.querySelector(`#${futureMonthsButton}`);
+            if(settingsButtonElement) {
+                settingsButtonElement.onclick = function(event) {
+                    //debugger;
+                    event.preventDefault();
+                    console.log(event);
+                    sidebarObj.toggle();
+                    console.log(sidebarObj.close);
+                }
+            }
+        }
+    }
+
+    function onActionBegin(args) {
+        if(args.requestType === 'toolbarItemRendering') {
+            args.items = args.items.filter(item => item.type != 'Separator');
+            for(let item of args.items) {
+                if(item.align === 'Right') {
+                    item.align = 'Center';
+                    item.prefixIcon = 'e-icons ' + item.prefixIcon;
+                }
+            }
+            args.items.push({
+                align: 'Right',
+                showTextOn: 'Both',
+                prefixIcon: 'e-settings',
+                text: 'Settings'
+            });
+            args.items.push({
+                align: 'Right',
+                showTextOn: 'Both',
+                prefixIcon: 'e-month',
+                text: 'Future months',
+                tooltipText: 'Future months',
+                htmlAttributes: {
+                    id: futureMonthsButton
+                }
+            });
+        }
+    }
+
+    function popupOpen(args) {
+        console.log(args);
+        if(args.type === 'Editor') {
+            var formElement = args.element.querySelector('.e-schedule-form');
+            if(!args.element.querySelector('.custom-field-row.event-participants-row')) {
+                var row = ej.base.createElement('div', {className: 'custom-field-row event-participants-row'});
+                formElement.firstChild.insertBefore(row, args.element.querySelector('.e-title-location-row'));
+                var container = ej.base.createElement('div', {className: 'custom-field-container'});
+                var inputElement = ej.base.createElement('input', {
+                    className: 'e-field', attrs: {name: 'To'}
+                });
+                container.appendChild(inputElement);
+                row.appendChild(container);
+                debugger;
+            }
+            if (!args.element.querySelector('.custom-field-row.event-type-row')) {
+                var row = ej.base.createElement('div', { className: 'custom-field-row event-type-row' });
+                formElement.firstChild.insertBefore(row, args.element.querySelector('.e-title-location-row'));
+                var container = ej.base.createElement('div', { className: 'custom-field-container' });
+                var inputEle = ej.base.createElement('input', {
+                    className: 'e-field', attrs: { name: 'EventType' }
+                });
+                container.appendChild(inputEle);
+                row.appendChild(container);
+                var drowDownList = new ej.dropdowns.DropDownList({
+                    dataSource: [
+                        { text: 'Event', value: 'event' },
+                        { text: 'Task', value: 'task' },
+                        { text: 'Reminder', value: 'reminder' },
+                        { text: 'Out-of-office', value: 'outOfOffice' }
+                    ],
+                    fields: { text: 'text', value: 'value' },
+                    value: (args.data).EventType,
+                    floatLabelType: 'Always', placeholder: 'Event Type'
+                });
+                drowDownList.appendTo(inputEle);
+                inputEle.setAttribute('name', 'EventType');
+            }
+
+            
+        }
+    }
+</script>

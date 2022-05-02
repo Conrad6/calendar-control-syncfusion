@@ -26,71 +26,149 @@
             view = View.Day;
             break;
     }
-}
 
-<div class="row">
-    <div class="col-12 control-section">
-        <div class="content-wrapper d-flex">
-            <div class="schedule-overview">
-                <div class="overview-header">
-                </div>
-                <div class="overview-toolbar">
-                    @(Html.EJS()
-                    .Toolbar("toolbar_options")
-                    .Height("70px")
-                    .OverflowMode(Syncfusion.EJ2.Navigations.OverflowMode.Scrollable)
-                    .ScrollStep(100)
-                    .Items(new List<ToolbarItem>() {
-                        new ToolbarItem { PrefixIcon = "e-icons e-day", TooltipText = "Day", Text = "Day"  },
-                        new ToolbarItem { PrefixIcon = "e-icons e-week", TooltipText = "Work Week", Text = "Work Week"  },
-                        new ToolbarItem { PrefixIcon = "e-icons e-week", TooltipText = "Calendar Week", Text = "Calendar Week"  },
-                        new ToolbarItem { PrefixIcon = "e-icons e-month", TooltipText = "Month", Text = "Month"  },
-                        new ToolbarItem { PrefixIcon = "e-icons  e-agenda-date-range", TooltipText = "List", Text = "List"  },
-                        new ToolbarItem { Type = ItemType.Separator },
-                        new ToolbarItem { PrefixIcon="e-icons e-settings", TooltipText="Settings", Text="Settings" }
-                    })
-                    .Render())
-                </div>
-                <div class="overview-content">
-                    <div class="left-panel">
-                        @(Html.EJS()
+    var schedule = Html.EJS()
                         .Schedule("schedule")
-                        .Height("600px")
-                        .EventSettings(new ScheduleEventSettings ())
+                        .Height("70vh")
+
+                        .EventSettings(new ScheduleEventSettings())
                         .SelectedDate(DateTime.Now)
                         .CurrentView(view)
-                        .Views(view => {
-                        view.Option(View.Day).Add();
-                        view.Option(View.WorkWeek).Add();
-                        view.Option(View.Week).DisplayName("Calendar Week").Add();
-                        view.Option(View.Month).Add();
-                        view.ShowWeekNumber(true);
-                        view.HeaderRows(null);
-                        view.Option(View.Agenda).DisplayName("List").Add();
-                        }).Render())
-                    </div>
-                </div>
-            </div>
-            <template id="futureMonthTemplate">
-                @(
-                    Html.EJS()
-                    .Calendar("dummy")
-                    .Start(Syncfusion.EJ2.Calendars.CalendarView.Month)
-                    .ShowTodayButton(false)
-                    .Render()
-                )
-            </template>
-            <div id="futureMonthsContainer" class="right-panel mx-3">
-                future months here
-            </div>
+                        .Views(view =>
+                        {
+                            view.Option(View.Day).Add();
+                            view.Option(View.WorkWeek).Add();
+                            view.Option(View.Week).DisplayName("Calendar Week").Add();
+                            view.Option(View.Week).DisplayName("Next 7 Days").Add();
+                            view.Option(View.Month).Add();
+                            view.ShowWeekNumber(true);
+                            view.HeaderRows(null);
+                            view.Option(View.Agenda).DisplayName("List").Add();
+                        });
+    if (Model.DisplayMode == CalendarControl.ViewComponents.ViewModels.DisplayMode.Next7Days)
+    {
+        schedule.FirstDayOfWeek((double)DateTime.Now.DayOfWeek);
+        schedule.WeekRule(WeekRule.FirstFullWeek);
+    }
+}
+
+<div class="row p-0">
+    <div class="col-12 p-0 control-section">
+        <div class="content-wrapper">
+            @(
+                Html.EJS()
+                .Splitter("splitter1")
+                .Width("100%")
+                .Height("100%")
+                .SeparatorSize(0)
+                .Orientation(Syncfusion.EJ2.Layouts.Orientation.Vertical)
+                .PaneSettings(item => {
+                    item.Content("#top-content")
+                    .Size("70px")
+                    .Collapsible(false)
+                    .Add();
+
+                    item.Content("#bottom-content")
+                    .Resizable(false)
+                    .Add();
+                })
+                .Render()
+            )
         </div>
     </div>
 </div>
 
-<script type="text/javascript">
-    const template = document.getElementById('futureMonthTemplate');
-    const clone = template.cloneNode(true);
-</script>
+<div id="top-content" style="display: none">
+    @(
+        Html.EJS()
+        .Toolbar("top-toolbar")
+        .Height("70px")
+        .Items(builder => {
+            builder.Template("#title")
+            .Disabled(true)
+            .Align(ItemAlign.Left)
+            .Add();
+
+            builder
+            .Text("Settings")
+            .TooltipText("Settings")
+            .PrefixIcon("e-icons e-settings")
+            .Align(ItemAlign.Right)
+            .Add();
+        })
+        .Render()
+    )
+</div>
+
+<h1 id="title">Calendar</h1>
+
+<div class="row p-0" id="bottom-content" style="display: none">
+    <div class="col-12 p-0 control-section">
+        <div class="content-wrapper d-flex">
+            @(
+            Html.EJS()
+            .Splitter("splitter2")
+            .Height("100%")
+            .SeparatorSize(0)
+            .PaneSettings(item => {
+
+            item.Content("#schedule-container")
+            .Resizable(false)
+            .Size("60vw")
+            .Collapsible(false)
+            .Add();
+
+            item.Content("#future-monts-container")
+            .Resizable(false)
+            .Size("30vw")
+            .Add();
+            })
+            .Render()
+            )
+        </div>
+    </div>
+</div>
+
+<div id="future-monts-container" class="future-months" style="display: none; padding-top: .5em">
+    <div class="overview-content d-flex flex-column gap-3 align-items-center">
+        @(
+            Html.EJS()
+            .Calendar("c1")
+            .DayHeaderFormat(Syncfusion.EJ2.Calendars.DayHeaderFormats.Narrow)
+            .ShowTodayButton(false)
+            .Render()
+        )
+        @(
+            Html.EJS()
+            .Calendar("c2")
+            .DayHeaderFormat(Syncfusion.EJ2.Calendars.DayHeaderFormats.Narrow)
+            .ShowTodayButton(false)
+            .Render()
+        )
+    </div>
+</div>
+
+<div id="schedule-container" class="schedule-overview" style="display: none;padding:.5em">
+    <div class="overview-content">
+        @(schedule.Render())
+    </div>
+</div>
+
+
 
 <style>
+    #splitter2 {
+        border: none;
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    .e-splitter .e-split-bar.e-split-bar-horizontal,
+    .e-splitter .e-split-bar.e-split-bar-vertical{
+        background: transparent !important;
+        border: none;
+        border-left: none;
+        border-right: none;
+        margin: 0;
+    }
 </style>

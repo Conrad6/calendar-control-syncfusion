@@ -1,4 +1,5 @@
 ﻿using CalendarControl.Models;
+using CalendarControl.ViewComponents.ViewModels;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace CalendarControl.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View(new TimesheetControlViewModel() { DisplayMode = DisplayMode.WorkWeek });
         }
 
         public IActionResult Privacy()
